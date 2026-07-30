@@ -746,7 +746,7 @@ const SMC_TEMPLATES = {
 
 รบกวนช่วย Monitor Link ดังต่อไปนี้ ในระหว่างดำเนินการติดตั้งและหลังการติดตั้งแล้วเสร็จ เพื่อเฝ้าระวังสถานะการเชื่อมต่อและความพร้อมในการให้บริการ
 
-${smcLinkList(items)}
+${smcLinkList(items, "before")}
 
 หากพบ Alarm, เหตุขัดข้อง หรือความผิดปกติใดๆ ที่อาจส่งผลกระทบต่อการให้บริการ รบกวนแจ้งกลับทีมงานโดยทันที เพื่อดำเนินการตรวจสอบและแก้ไขต่อไป
 
@@ -759,7 +759,7 @@ ${smcLinkList(items)}
 
 ขอแจ้งให้ทราบว่าในวันนี้ทีมงานได้ดำเนินการติดตั้ง Link ดังต่อไปนี้เสร็จสมบูรณ์เรียบร้อยแล้ว
 
-${smcLinkList(items)}
+${smcLinkList(items, "after")}
 
 ทั้งนี้ รบกวนทีม SMC ช่วย Monitor สถานะของ Link ภายหลังการติดตั้ง เพื่อเฝ้าระวังความเสถียรของการเชื่อมต่อและความพร้อมในการให้บริการ
 
@@ -769,7 +769,7 @@ ${smcLinkList(items)}
   })
 };
 
-function smcLinkList(items){
+function smcLinkList(items, stage){
   if(!items.length) return "Circuit : [ยังไม่ได้เลือก Circuit]";
 
   const rowsData = items.map(it=>{
@@ -777,7 +777,7 @@ function smcLinkList(items){
     return {
       circuit: it.circuit,
       time: `${it.apptTime || "-"}${dateTag}`,
-      status: it.status || "-"
+      status: stage === "after" ? "ดำเนินการเรียบร้อย" : (it.status || "-")
     };
   });
 
