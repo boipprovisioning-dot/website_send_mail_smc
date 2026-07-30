@@ -500,7 +500,7 @@
         </div>
         <div class="field-group">
           <label class="field-label">สำเนา (Cc)</label>
-          <input class="modal-input" id="smcCc" value="NSA-Team; DPO-FIX; BO IP Provisioning;">
+          <input class="modal-input" id="smcCc" value="NSA-Team; DPO-FIX; bo-ip-pro@ericsson.com">
         </div>
         <div class="field-group">
           <label class="field-label">หัวข้อ (Subject)</label>
@@ -540,7 +540,8 @@
             <label class="field-label">To</label>
             <input class="modal-input" type="time" id="addEndTime">
           </div>
-          <div style="display:flex;gap:12px;padding-bottom:10px;">
+          <div style="display:flex;gap:12px;padding-bottom:10px;flex-wrap:wrap;">
+            <a href="#" style="font-size:12.5px;color:var(--accent-blue);text-decoration:underline;" onclick="setAddTimeRange('18:00','23:59');return false;">18:00-24:00</a>
             <a href="#" style="font-size:12.5px;color:var(--accent-blue);text-decoration:underline;" onclick="setAddTimeRange('21:00','23:59');return false;">21:00-24:00</a>
             <a href="#" style="font-size:12.5px;color:var(--accent-blue);text-decoration:underline;" onclick="setAddTimeRange('00:00','04:00');return false;">00:00-04:00</a>
           </div>
@@ -642,6 +643,10 @@ function updateStaffValue(idx, value){
   window.currentRows[idx].staff = value;
 }
 
+function updateApptTimeValue(idx, value){
+  window.currentRows[idx].apptTime = value;
+}
+
 let confirmPendingAction = null;
 
 function openConfirmModal(message, onConfirm){
@@ -713,7 +718,7 @@ function renderTable(){
       <td>${d.recordDate.split(" ")[0]}<div class="time-sub">${d.recordDate.split(" ")[1]||""}</div></td>
       <td><input class="modal-input" style="min-width:150px;" value="${d.circuit}" placeholder="กรอก Circuit" oninput="updateCircuitValue(${i}, this.value)"></td>
       <td>${d.apptDate}</td>
-      <td class="time-cell">${d.apptTime}</td>
+      <td><input class="modal-input time-cell" style="min-width:120px;" value="${d.apptTime}" placeholder="เช่น 18:00 - 23:59" oninput="updateApptTimeValue(${i}, this.value)"></td>
       <td>
         <select class="modal-input" style="min-width:170px;" onchange="updateStaffValue(${i}, this.value)">
           ${STAFF_LIST.map(s=>`<option value="${s}" ${s===d.staff?"selected":""}>${s}</option>`).join("")}
