@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Admin Panel - รายการนัดนอกเวลาทำการ</title>
+<style>
+  :root{
+    --navy-900:#0b2340;
+    --navy-800:#0f2c4d;
+    --navy-700:#153a63;
+    --accent-blue:#2d6cdf;
+    --accent-green:#12b76a;
+    --accent-orange:#f79009;
+    --accent-red:#f04438;
+    --bg:#f4f6f9;
+    --card:#ffffff;
+    --text-dark:#101828;
+    --text-mid:#475467;
+    --text-light:#98a2b3;
+    --border:#e4e7ec;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Sarabun","Segoe UI",sans-serif;
+    background:var(--bg);
+    color:var(--text-dark);
+    display:flex;
+    min-height:100vh;
+  }
+  /* Sidebar */
+  .sidebar{
+    width:260px;
+    background:var(--navy-900);
+    color:#cdd8e8;
+    flex-shrink:0;
+    display:flex;
+    flex-direction:column;
+    padding:22px 0;
+  }
+  .brand{
+    padding:0 22px 18px 22px;
+    border-bottom:1px solid rgba(255,255,255,0.08);
+  }
+  .brand-title{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-weight:700;
+    font-size:17px;
+    color:#fff;
+  }
+  .brand-dot{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--accent-blue);
+  }
+  .brand-sub{
+    font-size:12.5px;
+    color:#8fa3bf;
+    margin-top:4px;
+  }
+  .user-box{
+    padding:16px 22px;
+    border-bottom:1px solid rgba(255,255,255,0.08);
+  }
+  .user-name{color:#fff;font-weight:600;font-size:14.5px;}
+  .user-role{color:#8fa3bf;font-size:12.5px;margin-top:2px;}
+  .nav-section-label{
+    font-size:11px;
+    letter-spacing:.04em;
+    color:#5f7794;
+    padding:18px 22px 8px;
+  }
+  .nav-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:11px 22px;
+    font-size:14px;
+    color:#b7c5da;
+    cursor:pointer;
+    text-decoration:none;
+    border-left:3px solid transparent;
+  }
+  .nav-item:hover{background:rgba(255,255,255,0.04);}
+  .nav-item.active{
+    background:var(--navy-700);
+    color:#fff;
+    border-left-color:var(--accent-blue);
+    font-weight:600;
+  }
+  .nav-item .icon{width:18px;text-align:center;font-size:15px;opacity:.9;}
+  .nav-item.danger{color:#f2a2a2;}
+
+  /* Main */
+  .main{flex:1;padding:26px 30px;min-width:0;}
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:22px;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  .page-title{font-size:22px;font-weight:700;color:var(--text-dark);}
+  .topbar-right{display:flex;align-items:center;gap:14px;}
+  .clock{font-variant-numeric:tabular-nums;color:var(--text-mid);font-size:14.5px;}
+  .btn{
+    border:none;
+    border-radius:8px;
+    padding:10px 16px;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    display:flex;align-items:center;gap:7px;
+  }
+  .btn-primary{background:var(--accent-green);color:#fff;}
+  .btn-primary:hover{filter:brightness(1.05);}
+  .btn-add{background:var(--accent-blue);color:#fff;}
+  .btn-add:hover{filter:brightness(1.05);}
+  .btn-outline{background:#fff;border:1px solid var(--border);color:var(--text-dark);}
+  .btn-outline:hover{background:#f9fafb;}
+
+  /* Stat cards */
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:16px;
+    margin-bottom:20px;
+  }
+  .stat-card{
+    background:var(--card);
+    border-radius:12px;
+    padding:18px 20px;
+    box-shadow:0 1px 2px rgba(16,24,40,.04);
+    border-left:4px solid var(--accent-blue);
+  }
+  .stat-card.today{border-left-color:var(--accent-green);}
+  .stat-card.done{border-left-color:var(--accent-orange);}
+  .stat-card.pending{border-left-color:var(--accent-red);}
+  .stat-label{font-size:13.5px;color:var(--text-mid);margin-bottom:8px;}
+  .stat-value{font-size:30px;font-weight:700;color:var(--text-dark);}
+  .stat-caption{font-size:12.5px;color:var(--text-light);margin-top:4px;}
+
+  /* Filters */
+  .filters{
+    background:var(--card);
+    border-radius:12px;
+    padding:16px;
+    display:flex;
+    gap:12px;
+    margin-bottom:18px;
+    flex-wrap:wrap;
+    box-shadow:0 1px 2px rgba(16,24,40,.04);
+  }
+  .search-box{
+    flex:1 1 260px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:#eef4ff;
+    border-radius:8px;
+    padding:10px 14px;
+  }
+  .search-box input{
+    border:none;background:transparent;outline:none;
+    font-size:14px;width:100%;font-family:inherit;color:var(--text-dark);
+  }
+  select{
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:10px 14px;
+    font-size:14px;
+    color:var(--text-dark);
+    background:#fff;
+    font-family:inherit;
+  }
+
+  /* Table */
+  .table-card{
+    background:var(--card);
+    border-radius:12px;
+    box-shadow:0 1px 2px rgba(16,24,40,.04);
+    overflow:hidden;
+  }
+  .table-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:18px 20px;
+    border-bottom:1px solid var(--border);
+  }
+  .table-head h3{margin:0;font-size:16px;}
+  .count-pill{
+    background:#f2f4f7;
+    color:var(--text-mid);
+    font-size:13px;
+    padding:5px 12px;
+    border-radius:20px;
+  }
+  table{width:100%;border-collapse:collapse;font-size:13.8px;}
+  thead th{
+    text-align:left;
+    padding:12px 16px;
+    background:#fafbfc;
+    color:var(--text-mid);
+    font-weight:600;
+    font-size:12.5px;
+    text-transform:uppercase;
+    letter-spacing:.02em;
+    border-bottom:1px solid var(--border);
+    white-space:nowrap;
+  }
+  tbody td{
+    padding:14px 16px;
+    border-bottom:1px solid var(--border);
+    vertical-align:top;
+    color:var(--text-dark);
+  }
+  tbody tr:hover{background:#fafcff;}
+  .row-idx{
+    width:26px;height:26px;border-radius:50%;
+    background:#eaf1ff;color:var(--accent-blue);
+    display:flex;align-items:center;justify-content:center;
+    font-size:12.5px;font-weight:700;
+  }
+  .badge{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:6px 12px;border-radius:16px;
+    font-size:12.5px;font-weight:600;
+  }
+  .badge-done{background:#e7f9f1;color:var(--accent-green);}
+  .badge-pending{background:#fff1e6;color:var(--accent-orange);}
+  .dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+  .email-chip{
+    background:#f1eeff;color:#6941c6;
+    padding:6px 10px;border-radius:8px;font-size:12.5px;
+    display:inline-flex;align-items:center;gap:6px;
+    max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .actions{display:flex;gap:8px;}
+  .action-btn{
+    border:1px solid var(--border);
+    background:#fff;
+    border-radius:8px;
+    padding:7px 12px;
+    font-size:12.5px;
+    font-weight:600;
+    cursor:pointer;
+    display:flex;align-items:center;gap:6px;
+    white-space:nowrap;
+  }
+  .action-send{color:#6941c6;border-color:#e3d9ff;}
+  .action-smc{color:#0b7285;border-color:#c3f0f5;}
+  .action-delete{color:var(--accent-red);border-color:#ffd4d0;}
+
+  /* SMC Modal */
+  .modal-overlay{
+    position:fixed;inset:0;
+    background:rgba(16,24,40,.45);
+    display:none;
+    align-items:center;justify-content:center;
+    z-index:100;
+    padding:20px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-box{
+    background:#fff;
+    border-radius:14px;
+    width:100%;
+    max-width:560px;
+    max-height:90vh;
+    overflow-y:auto;
+    box-shadow:0 20px 40px rgba(16,24,40,.25);
+  }
+  .modal-header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 22px;border-bottom:1px solid var(--border);
+  }
+  .modal-header h3{margin:0;font-size:16px;}
+  .modal-header .circuit-tag{font-size:12.5px;color:var(--text-mid);margin-top:3px;}
+  .modal-close{
+    border:none;background:transparent;font-size:18px;cursor:pointer;color:var(--text-mid);
+  }
+  .modal-body{padding:20px 22px;}
+  .tab-row{display:flex;gap:8px;margin-bottom:16px;}
+  .tab-btn{
+    flex:1;
+    border:1px solid var(--border);
+    background:#f9fafb;
+    color:var(--text-mid);
+    padding:9px 10px;
+    border-radius:8px;
+    font-size:13.5px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .tab-btn.active{
+    background:#e6fbfd;
+    border-color:#0b7285;
+    color:#0b7285;
+  }
+  .field-label{
+    font-size:12.5px;font-weight:600;color:var(--text-mid);
+    margin-bottom:6px;display:block;
+  }
+  .field-group{margin-bottom:14px;}
+  .modal-input, .modal-textarea{
+    width:100%;
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:10px 12px;
+    font-size:13.8px;
+    font-family:inherit;
+    color:var(--text-dark);
+  }
+  .modal-textarea{min-height:220px;resize:vertical;line-height:1.6;white-space:pre-wrap;}
+  #smcBody{font-family:"Courier New",monospace;font-size:13px;}
+  .modal-footer{
+    display:flex;justify-content:flex-end;gap:10px;
+    padding:16px 22px;border-top:1px solid var(--border);
+  }
+  .copy-hint{font-size:12px;color:var(--accent-green);margin-right:auto;align-self:center;display:none;}
+  .copy-hint.show{display:inline;}
+  .circuit-check-item{
+    display:flex;align-items:center;gap:8px;
+    padding:6px 2px;
+    font-size:13.5px;
+    border-bottom:1px solid #f2f4f7;
+  }
+  .circuit-check-item:last-child{border-bottom:none;}
+  .circuit-check-item input{flex:none;}
+  .circuit-check-item .cc-customer{color:var(--text-light);font-size:12px;}
+  .circuit-chip-box{
+    display:flex;flex-wrap:wrap;align-items:center;gap:6px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:8px 10px;
+    cursor:text;
+  }
+  .circuit-chip-box:focus-within{
+    border-color:var(--accent-blue);
+    box-shadow:0 0 0 2px rgba(45,108,223,.15);
+  }
+  .circuit-chip{
+    display:inline-flex;align-items:center;gap:5px;
+    background:#eaf1ff;color:var(--accent-blue);
+    border:1px solid #cfe0ff;
+    border-radius:6px;
+    padding:4px 8px;
+    font-size:12.5px;
+    font-weight:600;
+    white-space:nowrap;
+  }
+  .circuit-chip button{
+    border:none;background:transparent;color:#7ba3e8;
+    cursor:pointer;font-size:12px;line-height:1;padding:0;
+  }
+  .circuit-chip button:hover{color:var(--accent-blue);}
+  #addSubjectInput{
+    flex:1;min-width:120px;border:none;outline:none;
+    font-size:13.8px;font-family:inherit;color:var(--text-dark);
+    padding:4px 2px;
+  }
+  .time-cell{font-weight:600;color:var(--text-dark);}
+  .time-sub{color:var(--text-light);font-size:12px;}
+  .empty-state{padding:40px;text-align:center;color:var(--text-light);}
+</style>
+</head>
+<body>
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-title"><span class="brand-dot"></span> Admin Panel</div>
+      <div class="brand-sub">ระบบนัดนอกเวลาทำการ</div>
+    </div>
+    <div class="user-box">
+      <div class="user-name">Nittaya Khlaypong</div>
+      <div class="user-role">ผู้ดูแลระบบ</div>
+    </div>
+    <div class="nav-section-label">ข้อมูล</div>
+    <a class="nav-item active"><span class="icon">▤</span> รายการทั้งหมด</a>
+    <a class="nav-item"><span class="icon">▦</span> สถิติสรุป</a>
+    <div class="nav-section-label">ผู้ใช้งาน</div>
+    <a class="nav-item"><span class="icon">◑</span> จัดการ User</a>
+    <div class="nav-section-label">เครื่องมือ</div>
+    <a class="nav-item" onclick="openSmcModalGeneral()"><span class="icon">📡</span> แจ้ง SMC Monitor</a>
+    <a class="nav-item"><span class="icon">⇩</span> ส่งออก Excel</a>
+    <a class="nav-item"><span class="icon">▣</span> Export Report</a>
+    <a class="nav-item danger" onclick="clearAllData()"><span class="icon">⌫</span> ล้างข้อมูลทั้งหมด</a>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="page-title">รายการนัดนอกเวลาทำการ</div>
+      <div class="topbar-right">
+        <span class="clock" id="clock">--:--:--</span>
+        <button class="btn btn-add" onclick="openAddModal()">+ Add New</button>
+        <button class="btn btn-primary">⤓ Export Excel</button>
+        <button class="btn btn-outline">↻ รีเฟรช</button>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-label">รายการทั้งหมด</div>
+        <div class="stat-value" id="statTotal">0</div>
+        <div class="stat-caption">รายการใน Sheets</div>
+      </div>
+      <div class="stat-card today">
+        <div class="stat-label">วันนี้</div>
+        <div class="stat-value" id="statToday">0</div>
+        <div class="stat-caption">บันทึกวันนี้</div>
+      </div>
+      <div class="stat-card done">
+        <div class="stat-label">ดำเนินการแล้ว</div>
+        <div class="stat-value" id="statDone">0</div>
+        <div class="stat-caption">ส่ง Email แล้ว</div>
+      </div>
+      <div class="stat-card pending">
+        <div class="stat-label">รอดำเนินการ</div>
+        <div class="stat-value" id="statPending">0</div>
+        <div class="stat-caption">ยังไม่ส่ง Email</div>
+      </div>
+    </div>
+
+    <div class="filters">
+      <div class="search-box">
+        <span>🔍</span>
+        <input id="searchInput" type="text" placeholder="ค้นหา Circuit, Customer, Staff...">
+      </div>
+      <select id="staffFilter"><option value="">ADA Assigned ทั้งหมด</option></select>
+      <select id="timeFilter">
+        <option value="">ช่วงเวลาทั้งหมด</option>
+        <option value="เช้า">นอกเวลา (เช้า)</option>
+        <option value="เย็น">นอกเวลา (เย็น)</option>
+        <option value="วันหยุด">วันหยุด/นักขัตฤกษ์</option>
+      </select>
+      <select id="statusFilter">
+        <option value="">สถานะทั้งหมด</option>
+        <option value="ดำเนินการแล้ว">ดำเนินการแล้ว</option>
+        <option value="รอดำเนินการ">รอดำเนินการ</option>
+      </select>
+    </div>
+
+    <div class="table-card">
+      <div class="table-head">
+        <h3>รายการนัดนอกเวลาทำการ</h3>
+        <span class="count-pill" id="countPill">0 รายการ</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>วันที่บันทึก</th>
+            <th>CIRCUIT</th>
+            <th>วันที่นัดหมาย</th>
+            <th>เวลานัดหมาย</th>
+            <th>ADA ASSIGNED</th>
+            <th>EMAIL ผู้ส่ง</th>
+            <th>สถานะ</th>
+            <th>จัดการ</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <div id="emptyState" class="empty-state" style="display:none;">ไม่พบรายการที่ค้นหา</div>
+    </div>
+  </main>
+
+  <div class="modal-overlay" id="smcModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div>
+          <h3>แจ้งทีม SMC Monitor Link</h3>
+        </div>
+        <button class="modal-close" onclick="closeSmcModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="tab-row">
+          <button class="tab-btn active" id="tabBefore" onclick="switchSmcTab('before')">ก่อนดำเนินการติดตั้ง</button>
+          <button class="tab-btn" id="tabAfter" onclick="switchSmcTab('after')">หลังดำเนินการติดตั้ง</button>
+        </div>
+        <div class="field-group">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:8px;">
+            <label class="field-label" style="margin-bottom:0;">รายการนัดนอกเวลาทำการ (Circuit)</label>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--text-mid);cursor:pointer;">
+                <input type="checkbox" id="smcTodayOnlyToggle" checked onchange="toggleSmcTodayFilter(this)"> แสดงเฉพาะวันนี้
+              </label>
+              <button type="button" class="tab-btn" style="flex:none;padding:5px 10px;font-size:12px;" onclick="toggleAllSmcCircuits(true)">เลือกทั้งหมด</button>
+              <button type="button" class="tab-btn" style="flex:none;padding:5px 10px;font-size:12px;" onclick="toggleAllSmcCircuits(false)">ล้างการเลือก</button>
+            </div>
+          </div>
+          <div id="smcCircuitList" style="max-height:150px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:8px 10px;"></div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">ถึง (To)</label>
+          <input class="modal-input" id="smcTo" value="Boonyalap Leearam; pakkawan.traisawasdi@ericsson.com; Penpak Jaikla; Saroj Keeratisathitporn; SMC; corpcare@trueinternet.co.th">
+        </div>
+        <div class="field-group">
+          <label class="field-label">สำเนา (Cc)</label>
+          <input class="modal-input" id="smcCc" value="NSA-Team; DPO-FIX">
+        </div>
+        <div class="field-group">
+          <label class="field-label">หัวข้อ (Subject)</label>
+          <input class="modal-input" id="smcSubject">
+        </div>
+        <div class="field-group">
+          <label class="field-label">เนื้อหา (Body)</label>
+          <textarea class="modal-textarea" id="smcBody"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <span class="copy-hint" id="copyHint">คัดลอกแล้ว ✓</span>
+        <button class="btn btn-outline" onclick="copySmcBody()">คัดลอกเนื้อหา</button>
+        <button class="btn btn-primary" onclick="sendSmcMail()">✉ เปิดในอีเมล</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="addModal">
+    <div class="modal-box" style="max-width:600px;">
+      <div class="modal-header">
+        <div><h3>เพิ่มรายการนัดนอกเวลาทำการ</h3></div>
+        <button class="modal-close" onclick="closeAddModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="field-group">
+          <label class="field-label">Appoint Date</label>
+          <input class="modal-input" type="date" id="addApptDate">
+        </div>
+        <div class="field-group" style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:110px;">
+            <label class="field-label">Start Time</label>
+            <input class="modal-input" type="time" id="addStartTime">
+          </div>
+          <div style="padding-bottom:10px;color:var(--text-mid);font-size:13.5px;">To</div>
+          <div style="flex:1;min-width:110px;">
+            <label class="field-label">To</label>
+            <input class="modal-input" type="time" id="addEndTime">
+          </div>
+          <div style="display:flex;gap:12px;padding-bottom:10px;">
+            <a href="#" style="font-size:12.5px;color:var(--accent-blue);text-decoration:underline;" onclick="setAddTimeRange('21:00','23:59');return false;">21:00-24:00</a>
+            <a href="#" style="font-size:12.5px;color:var(--accent-blue);text-decoration:underline;" onclick="setAddTimeRange('00:00','04:00');return false;">00:00-04:00</a>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">ADA Assigned</label>
+          <select class="modal-input" id="addAdaAssigned">
+            <option value="">-- เลือก ADA Assigned --</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Request Type</label>
+          <div style="display:flex;gap:18px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13.8px;">
+            <label style="display:flex;align-items:center;gap:6px;"><input type="radio" name="addRequestType" value="TCM" checked> TCM</label>
+            <label style="display:flex;align-items:center;gap:6px;"><input type="radio" name="addRequestType" value="Email"> Email</label>
+            <label style="display:flex;align-items:center;gap:6px;"><input type="radio" name="addRequestType" value="Call Phone"> Call Phone</label>
+            <label style="display:flex;align-items:center;gap:6px;"><input type="radio" name="addRequestType" value="Plan Work"> Plan Work</label>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Appoint Subject (Circuit) <span style="color:var(--text-light);font-weight:400;">— เพิ่มได้หลายรายการ (แต่ละรายการจะแยกเป็นคนละแถว)</span></label>
+          <div id="circuitChipBox" class="circuit-chip-box" onclick="document.getElementById('addSubjectInput').focus()">
+            <input type="text" id="addSubjectInput" placeholder="เช่น VDES2514-BKK-08"
+                   oninput="handleCircuitInputChange()"
+                   onkeydown="handleCircuitKeyDown(event)"
+                   onpaste="handleCircuitPaste(event)">
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Appoint Detail</label>
+          <textarea class="modal-input" id="addDetail" rows="4" style="resize:vertical;"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <span class="copy-hint" id="addErrorHint" style="color:var(--accent-red);"></span>
+        <button class="btn btn-outline" onclick="resetAddForm()">Reset</button>
+        <button class="btn btn-primary" onclick="submitAddForm()">Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal-box" style="max-width:380px;">
+      <div class="modal-body" style="padding-top:24px;">
+        <p id="confirmMessage" style="font-size:14px;color:var(--text-dark);line-height:1.6;margin:0;"></p>
+      </div>
+      <div class="modal-footer" style="justify-content:flex-end;">
+        <button class="btn btn-outline" onclick="closeConfirmModal()">ยกเลิก</button>
+        <button class="btn btn-primary" style="background:var(--accent-red);" id="confirmOkBtn">ยืนยัน</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+const STAFF_LIST = [
+  "Nittaya Khlaypong",
+  "Worakit Sangwiwatcharoen",
+  "Kittisak Paengphol",
+  "Mongkol Muangme",
+  "Weeraphong Kongpetmanee",
+  "Seksan Koetchan",
+  "Surachat Buakhem"
+];
+
+const data = [
+  {circuit:"VDES2514-BKK-01", recordDate:"30/07/2026 08:35", apptDate:"31/07/2026", apptTime:"19:30 - 21:00", staff:"Nittaya Khlaypong", email:"bo-ip-pro@ericsson.com", status:"ดำเนินการแล้ว"},
+  {circuit:"VDES2514-BKK-02", recordDate:"30/07/2026 08:33", apptDate:"31/07/2026", apptTime:"06:00 - 07:30", staff:"Worakit Sangwiwatcharoen", email:"bo-ip-pro@ericsson.com", status:"ดำเนินการแล้ว"},
+  {circuit:"VDES2514-CNX-05", recordDate:"29/07/2026 16:10", apptDate:"01/08/2026", apptTime:"20:00 - 22:00", staff:"Kittisak Paengphol", email:"bo-ip-pro@ericsson.com", status:"รอดำเนินการ"},
+  {circuit:"VDES2514-KKN-03", recordDate:"29/07/2026 14:02", apptDate:"02/08/2026", apptTime:"วันหยุดนักขัตฤกษ์", staff:"Mongkol Muangme", email:"bo-ip-pro@ericsson.com", status:"ดำเนินการแล้ว"},
+  {circuit:"VDES2514-HDY-07", recordDate:"28/07/2026 09:40", apptDate:"30/07/2026", apptTime:"05:30 - 07:00", staff:"Weeraphong Kongpetmanee", email:"bo-ip-pro@ericsson.com", status:"รอดำเนินการ"},
+];
+
+function timeCategory(t){
+  if(t.includes("วันหยุด")) return "วันหยุด";
+  const hour = parseInt(t.split(":")[0]);
+  if(!isNaN(hour)) return hour < 12 ? "เช้า" : "เย็น";
+  return "";
+}
+
+const TODAY_DATE = "30/07/2026";
+
+function renderStats(rows){
+  document.getElementById("statTotal").textContent = data.length;
+  document.getElementById("statToday").textContent = data.filter(d=>d.recordDate.startsWith(TODAY_DATE)).length;
+  document.getElementById("statDone").textContent = data.filter(d=>d.status==="ดำเนินการแล้ว").length;
+  document.getElementById("statPending").textContent = data.filter(d=>d.status==="รอดำเนินการ").length;
+}
+
+function populateStaffFilter(){
+  const sel = document.getElementById("staffFilter");
+  STAFF_LIST.forEach(s=>{
+    const opt = document.createElement("option");
+    opt.value = s; opt.textContent = s;
+    sel.appendChild(opt);
+  });
+}
+
+function updateCircuitValue(idx, value){
+  window.currentRows[idx].circuit = value;
+}
+
+function updateStaffValue(idx, value){
+  window.currentRows[idx].staff = value;
+}
+
+let confirmPendingAction = null;
+
+function openConfirmModal(message, onConfirm){
+  document.getElementById("confirmMessage").textContent = message;
+  confirmPendingAction = onConfirm;
+  document.getElementById("confirmModal").classList.add("open");
+}
+
+function closeConfirmModal(){
+  document.getElementById("confirmModal").classList.remove("open");
+  confirmPendingAction = null;
+}
+
+document.getElementById("confirmOkBtn").addEventListener("click", ()=>{
+  const action = confirmPendingAction;
+  document.getElementById("confirmModal").classList.remove("open");
+  confirmPendingAction = null;
+  if(action) action();
+});
+
+document.getElementById("confirmModal").addEventListener("click", (e)=>{
+  if(e.target.id === "confirmModal") closeConfirmModal();
+});
+
+function deleteRow(btn){
+  const idx = parseInt(btn.getAttribute("data-idx"));
+  const row = window.currentRows[idx];
+  openConfirmModal(`ต้องการลบรายการ Circuit "${row.circuit}" ใช่หรือไม่?`, ()=>{
+    const dataIdx = data.indexOf(row);
+    if(dataIdx > -1) data.splice(dataIdx, 1);
+    renderStats();
+    renderTable();
+  });
+}
+
+function clearAllData(){
+  openConfirmModal("ต้องการล้างข้อมูลทั้งหมดใช่หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้", ()=>{
+    data.length = 0;
+    renderStats();
+    renderTable();
+  });
+}
+
+function renderTable(){
+  const q = document.getElementById("searchInput").value.trim().toLowerCase();
+  const staff = document.getElementById("staffFilter").value;
+  const time = document.getElementById("timeFilter").value;
+  const status = document.getElementById("statusFilter").value;
+
+  const rows = data.filter(d=>{
+    const matchesSearch = !q || [d.circuit,d.staff].some(f=>f.toLowerCase().includes(q));
+    const matchesStaff = !staff || d.staff===staff;
+    const matchesTime = !time || timeCategory(d.apptTime)===time;
+    const matchesStatus = !status || d.status===status;
+    return matchesSearch && matchesStaff && matchesTime && matchesStatus;
+  });
+
+  const body = document.getElementById("tableBody");
+  body.innerHTML = "";
+  document.getElementById("countPill").textContent = rows.length + " รายการ";
+  document.getElementById("emptyState").style.display = rows.length ? "none":"block";
+  window.currentRows = rows;
+
+  rows.forEach((d,i)=>{
+    const tr = document.createElement("tr");
+    const badgeClass = d.status==="ดำเนินการแล้ว" ? "badge-done":"badge-pending";
+    tr.innerHTML = `
+      <td><span class="row-idx">${i+1}</span></td>
+      <td>${d.recordDate.split(" ")[0]}<div class="time-sub">${d.recordDate.split(" ")[1]||""}</div></td>
+      <td><input class="modal-input" style="min-width:150px;" value="${d.circuit}" placeholder="กรอก Circuit" oninput="updateCircuitValue(${i}, this.value)"></td>
+      <td>${d.apptDate}</td>
+      <td class="time-cell">${d.apptTime}</td>
+      <td>
+        <select class="modal-input" style="min-width:170px;" onchange="updateStaffValue(${i}, this.value)">
+          ${STAFF_LIST.map(s=>`<option value="${s}" ${s===d.staff?"selected":""}>${s}</option>`).join("")}
+        </select>
+      </td>
+      <td><span class="email-chip">✉ ${d.email}</span></td>
+      <td><span class="badge ${badgeClass}"><span class="dot"></span>${d.status}</span></td>
+      <td>
+        <div class="actions">
+          <button class="action-btn action-send">✉ ส่งเมล</button>
+          <button class="action-btn action-smc" data-idx="${i}" onclick="openSmcModal(this)">📡 แจ้ง SMC</button>
+          <button class="action-btn action-delete" data-idx="${i}" onclick="deleteRow(this)">ลบ</button>
+        </div>
+      </td>
+    `;
+    body.appendChild(tr);
+  });
+}
+
+const SMC_TEMPLATES = {
+  before: (items) => ({
+    subject: `แจ้ง Monitor Link ก่อนดำเนินการติดตั้ง - ${smcSubjectTag(items)}`,
+    body:
+`เรียน SMC Team,
+
+รบกวนช่วย Monitor Link ดังต่อไปนี้ ในระหว่างดำเนินการติดตั้งและหลังการติดตั้งแล้วเสร็จ เพื่อเฝ้าระวังสถานะการเชื่อมต่อและความพร้อมในการให้บริการ
+
+${smcLinkList(items)}
+
+หากพบ Alarm, เหตุขัดข้อง หรือความผิดปกติใดๆ ที่อาจส่งผลกระทบต่อการให้บริการ รบกวนแจ้งกลับทีมงานโดยทันที เพื่อดำเนินการตรวจสอบและแก้ไขต่อไป
+
+ขอขอบคุณสำหรับการสนับสนุนและความร่วมมือ`
+  }),
+  after: (items) => ({
+    subject: `แจ้งติดตั้ง Link เสร็จสมบูรณ์ - ${smcSubjectTag(items)}`,
+    body:
+`เรียน SMC Team,
+
+ขอแจ้งให้ทราบว่าในวันนี้ทีมงานได้ดำเนินการติดตั้ง Link ดังต่อไปนี้เสร็จสมบูรณ์เรียบร้อยแล้ว
+
+${smcLinkList(items)}
+
+ทั้งนี้ รบกวนทีม SMC ช่วย Monitor สถานะของ Link ภายหลังการติดตั้ง เพื่อเฝ้าระวังความเสถียรของการเชื่อมต่อและความพร้อมในการให้บริการ
+
+หากพบ Alarm หรือความผิดปกติใด ๆ ที่อาจส่งผลกระทบต่อการให้บริการ รบกวนแจ้งทีมงานกลับโดยทันที เพื่อดำเนินการตรวจสอบและแก้ไขต่อไป
+
+ขอขอบคุณสำหรับความร่วมมือและการสนับสนุน`
+  })
+};
+
+function smcLinkList(items){
+  if(!items.length) return "Circuit : [ยังไม่ได้เลือก Circuit]";
+
+  const rowsData = items.map(it=>{
+    const dateTag = it.apptDate && it.apptDate !== TODAY_DATE ? ` (${it.apptDate})` : "";
+    return {
+      circuit: it.circuit,
+      time: `${it.apptTime || "-"}${dateTag}`,
+      status: it.status || "-"
+    };
+  });
+
+  const circuitW = Math.max("CIRCUIT".length, ...rowsData.map(r=>r.circuit.length)) + 2;
+  const timeW = Math.max("เวลานัดหมาย".length, ...rowsData.map(r=>r.time.length)) + 2;
+
+  const header = `${"CIRCUIT".padEnd(circuitW)}${"เวลานัดหมาย".padEnd(timeW)}สถานะ`;
+  const divider = "-".repeat(circuitW + timeW + 12);
+  const lines = rowsData.map(r=>`${r.circuit.padEnd(circuitW)}${r.time.padEnd(timeW)}${r.status}`);
+
+  return [header, divider, ...lines].join("\n");
+}
+
+function smcSubjectTag(items){
+  if(!items.length) return "[ยังไม่ได้เลือก Circuit]";
+  if(items.length === 1) return items[0].circuit;
+  return `${items.length} Circuit`;
+}
+
+let smcCurrentStage = "before";
+let smcShowTodayOnly = true;
+
+function parseStartMinutes(apptTime){
+  const m = (apptTime||"").match(/^(\d{1,2}):(\d{2})/);
+  if(!m) return 9999;
+  return parseInt(m[1])*60 + parseInt(m[2]);
+}
+
+function uniqueCircuits(){
+  const seen = new Set();
+  const list = [];
+  data.forEach(d=>{
+    if(!seen.has(d.circuit)){
+      seen.add(d.circuit);
+      list.push({circuit:d.circuit, apptDate:d.apptDate, apptTime:d.apptTime, status:d.status});
+    }
+  });
+  return list;
+}
+
+function getSmcCircuitPool(){
+  let list = uniqueCircuits();
+  if(smcShowTodayOnly){
+    list = list.filter(c=>c.apptDate === TODAY_DATE);
+  }
+  return list.sort((a,b)=>{
+    if(a.apptDate !== b.apptDate) return a.apptDate < b.apptDate ? -1 : 1;
+    return parseStartMinutes(a.apptTime) - parseStartMinutes(b.apptTime);
+  });
+}
+
+function renderSmcCircuitList(preselectCircuit){
+  const container = document.getElementById("smcCircuitList");
+  container.innerHTML = "";
+  const pool = getSmcCircuitPool();
+  if(pool.length === 0){
+    container.innerHTML = '<div style="color:var(--text-light);font-size:13px;padding:6px 2px;">ไม่มี Circuit ที่นัดหมายวันนี้</div>';
+    return;
+  }
+  pool.forEach((c,i)=>{
+    const id = `smcCk_${i}`;
+    const checked = preselectCircuit ? (c.circuit === preselectCircuit) : true;
+    const row = document.createElement("label");
+    row.className = "circuit-check-item";
+    row.setAttribute("for", id);
+    row.innerHTML = `<input type="checkbox" id="${id}" data-circuit="${c.circuit}" data-apptdate="${c.apptDate}" data-appttime="${c.apptTime}" data-status="${c.status}" ${checked ? "checked":""} onchange="refreshSmcTemplate()"> <span>${c.circuit}</span> <span class="cc-customer">${c.apptDate} · ${c.apptTime}</span>`;
+    container.appendChild(row);
+  });
+}
+
+function getSelectedSmcCircuits(){
+  return [...document.querySelectorAll('#smcCircuitList input[type="checkbox"]:checked')].map(el=>({
+    circuit: el.getAttribute("data-circuit"),
+    apptDate: el.getAttribute("data-apptdate"),
+    apptTime: el.getAttribute("data-appttime"),
+    status: el.getAttribute("data-status")
+  }));
+}
+
+function toggleAllSmcCircuits(state){
+  document.querySelectorAll('#smcCircuitList input[type="checkbox"]').forEach(el=>el.checked = state);
+  refreshSmcTemplate();
+}
+
+function toggleSmcTodayFilter(checkbox){
+  smcShowTodayOnly = checkbox.checked;
+  renderSmcCircuitList(null);
+  refreshSmcTemplate();
+}
+
+function openSmcModal(btn){
+  const idx = parseInt(btn.getAttribute("data-idx"));
+  const row = window.currentRows[idx];
+  smcShowTodayOnly = false;
+  document.getElementById("smcTodayOnlyToggle").checked = false;
+  renderSmcCircuitList(row.circuit);
+  smcCurrentStage = "before";
+  switchSmcTab("before");
+  document.getElementById("smcModal").classList.add("open");
+}
+
+function openSmcModalGeneral(){
+  smcShowTodayOnly = true;
+  document.getElementById("smcTodayOnlyToggle").checked = true;
+  renderSmcCircuitList(null);
+  smcCurrentStage = "before";
+  switchSmcTab("before");
+  document.getElementById("smcModal").classList.add("open");
+}
+
+function closeSmcModal(){
+  document.getElementById("smcModal").classList.remove("open");
+}
+
+function switchSmcTab(stage){
+  smcCurrentStage = stage;
+  document.getElementById("tabBefore").classList.toggle("active", stage==="before");
+  document.getElementById("tabAfter").classList.toggle("active", stage==="after");
+  refreshSmcTemplate();
+}
+
+function refreshSmcTemplate(){
+  const tpl = SMC_TEMPLATES[smcCurrentStage](getSelectedSmcCircuits());
+  document.getElementById("smcSubject").value = tpl.subject;
+  document.getElementById("smcBody").value = tpl.body;
+  document.getElementById("copyHint").classList.remove("show");
+}
+
+function copySmcBody(){
+  const text = document.getElementById("smcBody").value;
+  navigator.clipboard.writeText(text).then(()=>{
+    const hint = document.getElementById("copyHint");
+    hint.classList.add("show");
+    setTimeout(()=>hint.classList.remove("show"), 1800);
+  });
+}
+
+function sendSmcMail(){
+  const to = document.getElementById("smcTo").value;
+  const cc = document.getElementById("smcCc").value;
+  const subject = encodeURIComponent(document.getElementById("smcSubject").value);
+  const bodyText = encodeURIComponent(document.getElementById("smcBody").value);
+  window.location.href = `mailto:${to}?cc=${encodeURIComponent(cc)}&subject=${subject}&body=${bodyText}`;
+}
+
+document.getElementById("smcModal").addEventListener("click", (e)=>{
+  if(e.target.id === "smcModal") closeSmcModal();
+});
+
+function tickClock(){
+  const now = new Date();
+  document.getElementById("clock").textContent = now.toLocaleTimeString("th-TH",{hour12:false});
+}
+
+["searchInput","staffFilter","timeFilter","statusFilter"].forEach(id=>{
+  document.getElementById(id).addEventListener("input", renderTable);
+});
+
+let addCircuits = [];
+
+function renderCircuitChips(){
+  const box = document.getElementById("circuitChipBox");
+  const input = document.getElementById("addSubjectInput");
+  box.querySelectorAll(".circuit-chip").forEach(el=>el.remove());
+  addCircuits.forEach(c=>{
+    const chip = document.createElement("span");
+    chip.className = "circuit-chip";
+    chip.innerHTML = `${c} <button type="button" onclick="removeCircuitChip('${c}')">✕</button>`;
+    box.insertBefore(chip, input);
+  });
+  input.placeholder = addCircuits.length ? "เพิ่มอีก..." : "เช่น VDES2514-BKK-08";
+}
+
+function splitCircuitTokens(raw){
+  return raw.split(/[\s,;]+/).map(s=>s.trim().toUpperCase()).filter(Boolean);
+}
+
+function addCircuitsFromText(raw){
+  const tokens = splitCircuitTokens(raw);
+  if(tokens.length === 0) return;
+  tokens.forEach(t=>{
+    if(!addCircuits.includes(t)) addCircuits.push(t);
+  });
+  document.getElementById("addSubjectInput").value = "";
+  renderCircuitChips();
+}
+
+function removeCircuitChip(code){
+  addCircuits = addCircuits.filter(c=>c !== code);
+  renderCircuitChips();
+}
+
+function handleCircuitInputChange(){
+  // no-op placeholder for live validation hooks if needed later
+}
+
+function handleCircuitKeyDown(e){
+  if(e.key === "Enter" || e.key === "," || e.key === ";" || e.key === " "){
+    e.preventDefault();
+    addCircuitsFromText(e.target.value);
+  } else if(e.key === "Backspace" && !e.target.value && addCircuits.length){
+    addCircuits.pop();
+    renderCircuitChips();
+  }
+}
+
+function handleCircuitPaste(e){
+  const text = (e.clipboardData || window.clipboardData).getData("text");
+  if(text && /[\s,;]/.test(text)){
+    e.preventDefault();
+    addCircuitsFromText(text);
+  }
+}
+
+function populateAddAdaAssigned(){
+  const sel = document.getElementById("addAdaAssigned");
+  STAFF_LIST.forEach(s=>{
+    const opt = document.createElement("option");
+    opt.value = s; opt.textContent = s;
+    sel.appendChild(opt);
+  });
+}
+
+function setAddTimeRange(start, end){
+  document.getElementById("addStartTime").value = start;
+  document.getElementById("addEndTime").value = end;
+}
+
+function openAddModal(){
+  resetAddForm();
+  document.getElementById("addModal").classList.add("open");
+}
+
+function closeAddModal(){
+  document.getElementById("addModal").classList.remove("open");
+}
+
+function resetAddForm(){
+  document.getElementById("addApptDate").value = "";
+  document.getElementById("addStartTime").value = "";
+  document.getElementById("addEndTime").value = "";
+  document.getElementById("addAdaAssigned").value = "";
+  document.getElementById("addSubjectInput").value = "";
+  addCircuits = [];
+  renderCircuitChips();
+  document.getElementById("addDetail").value = "";
+  document.getElementById("addErrorHint").textContent = "";
+  const firstRadio = document.querySelector('input[name="addRequestType"][value="TCM"]');
+  if(firstRadio) firstRadio.checked = true;
+}
+
+const SENDER_EMAIL = "bo-ip-pro@ericsson.com";
+
+function formatDateThai(isoDate){
+  if(!isoDate) return "";
+  const [y,m,d] = isoDate.split("-");
+  return `${d}/${m}/${y}`;
+}
+
+function submitAddForm(){
+  const apptDateIso = document.getElementById("addApptDate").value;
+  const startTime = document.getElementById("addStartTime").value;
+  const endTime = document.getElementById("addEndTime").value;
+  const staff = document.getElementById("addAdaAssigned").value;
+  const hint = document.getElementById("addErrorHint");
+
+  // catch any circuit still sitting in the text box that wasn't committed to a chip yet
+  const leftover = splitCircuitTokens(document.getElementById("addSubjectInput").value);
+  const finalCircuits = [...addCircuits];
+  leftover.forEach(t=>{ if(!finalCircuits.includes(t)) finalCircuits.push(t); });
+
+  if(!apptDateIso || !startTime || !endTime || !staff || finalCircuits.length === 0){
+    hint.textContent = "กรุณากรอกข้อมูลให้ครบ (Date, Time, ADA Assigned, Circuit อย่างน้อย 1 รายการ)";
+    return;
+  }
+
+  const now = new Date();
+  const recordDate = `${String(now.getDate()).padStart(2,"0")}/${String(now.getMonth()+1).padStart(2,"0")}/${now.getFullYear()} ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+
+  finalCircuits.forEach(circuit=>{
+    data.push({
+      circuit: circuit,
+      recordDate: recordDate,
+      apptDate: formatDateThai(apptDateIso),
+      apptTime: `${startTime} - ${endTime}`,
+      staff: staff,
+      email: SENDER_EMAIL,
+      status: "รอดำเนินการ"
+    });
+  });
+
+  closeAddModal();
+  renderStats();
+  renderTable();
+}
+
+document.getElementById("addModal").addEventListener("click", (e)=>{
+  if(e.target.id === "addModal") closeAddModal();
+});
+
+populateStaffFilter();
+populateAddAdaAssigned();
+renderStats();
+renderTable();
+tickClock();
+setInterval(tickClock, 1000);
+</script>
+</body>
+</html>
