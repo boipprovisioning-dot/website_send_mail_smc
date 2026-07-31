@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Admin Panel - รายการนัดนอกเวลาทำการ</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root{
     --navy-900:#0b2340;
@@ -120,6 +121,12 @@
   .btn-add:hover{filter:brightness(1.05);}
   .btn-outline{background:#fff;border:1px solid var(--border);color:var(--text-dark);}
   .btn-outline:hover{background:#f9fafb;}
+  .btn:disabled{opacity:.7;cursor:default;}
+  .btn-spinning{animation:btnSpinPulse .5s ease-in-out;}
+  @keyframes btnSpinPulse{
+    0%{transform:rotate(0deg);}
+    100%{transform:rotate(360deg);}
+  }
 
   /* Stat cards */
   .stats{
@@ -316,6 +323,7 @@
   }
   .modal-textarea{min-height:220px;resize:vertical;line-height:1.6;white-space:pre-wrap;}
   #smcBody{font-family:"Courier New",monospace;font-size:13px;}
+  #pwBody{font-family:"Courier New",monospace;font-size:13px;}
   .modal-footer{
     display:flex;justify-content:flex-end;gap:10px;
     padding:16px 22px;border-top:1px solid var(--border);
@@ -365,6 +373,63 @@
   .time-cell{font-weight:600;color:var(--text-dark);}
   .time-sub{color:var(--text-light);font-size:12px;}
   .empty-state{padding:40px;text-align:center;color:var(--text-light);}
+
+  /* Report overlay dashboard */
+  .report-overlay{
+    position:fixed;inset:0;background:#242526;z-index:500;
+    display:none;overflow-y:auto;font-family:"Sarabun","Segoe UI",sans-serif;
+    --rpt-panel:#2d2e30; --rpt-panel2:#333436;
+    --rpt-text:#f2f2f2; --rpt-text-dim:#a9abae;
+    --rpt-blue:#2f6fb0; --rpt-teal:#2ec4b6; --rpt-orange:#e8622c; --rpt-gold:#f2b134;
+    --rpt-border:#3d3e40;
+  }
+  .report-overlay.open{display:block;}
+  .report-overlay *{box-sizing:border-box;}
+  .rpt-toolbar{display:flex;justify-content:flex-end;gap:10px;padding:10px 20px;background:var(--rpt-panel);border-bottom:1px solid var(--rpt-border);position:sticky;top:0;z-index:2;}
+  .rpt-toolbar button{padding:8px 16px;border-radius:8px;border:none;font-weight:600;cursor:pointer;font-family:inherit;color:#fff;}
+  .rpt-btn-print{background:var(--rpt-blue);}
+  .rpt-btn-close{background:#4b4d50;}
+  .rpt-layout{display:flex;gap:16px;padding:20px;align-items:flex-start;color:var(--rpt-text);}
+  .rpt-sidebar{width:190px;flex-shrink:0;background:var(--rpt-panel);border-radius:10px;padding:14px 16px;max-height:640px;overflow-y:auto;}
+  .rpt-sidebar h4{margin:0 0 10px;font-size:12.5px;font-weight:600;color:var(--rpt-text-dim);}
+  .rpt-sidebar label{display:flex;align-items:center;gap:8px;font-size:13px;padding:4px 0;cursor:pointer;color:var(--rpt-text);}
+  .rpt-sidebar input[type=checkbox]{accent-color:var(--rpt-blue);width:14px;height:14px;cursor:pointer;}
+  .rpt-content{flex:1;min-width:0;}
+  .rpt-header{display:flex;gap:14px;align-items:stretch;margin-bottom:16px;flex-wrap:wrap;}
+  .rpt-title-box{background:var(--rpt-panel);border-radius:10px;padding:16px 20px;flex:1 1 260px;display:flex;flex-direction:column;justify-content:center;}
+  .rpt-title-box h1{margin:0;font-size:21px;font-weight:800;color:var(--rpt-gold);line-height:1.25;}
+  .rpt-title-box .rpt-sub{color:var(--rpt-text-dim);font-size:12px;margin-top:6px;}
+  .rpt-stat-card{border-radius:10px;padding:14px 22px;min-width:170px;flex:1 1 170px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;}
+  .rpt-stat-card .rpt-num{font-size:38px;font-weight:800;line-height:1;}
+  .rpt-stat-card .rpt-lbl{font-size:12px;margin-top:8px;text-align:center;opacity:.95;}
+  .rpt-stat-blue{background:var(--rpt-blue);}
+  .rpt-stat-teal{background:var(--rpt-teal);}
+  .rpt-stat-orange{background:var(--rpt-orange);}
+  .rpt-panels{display:flex;gap:16px;flex-wrap:wrap;}
+  .rpt-panel{background:var(--rpt-panel);border-radius:10px;padding:16px;}
+  .rpt-panel h3{margin:0 0 12px;font-size:13.5px;font-weight:600;color:var(--rpt-text);}
+  .rpt-donut-panel{flex:1 1 280px;display:flex;flex-direction:column;align-items:center;}
+  .rpt-donut-wrap{display:flex;align-items:center;gap:20px;}
+  .rpt-legend{display:flex;flex-direction:column;gap:8px;font-size:12.5px;}
+  .rpt-legend .rpt-item{display:flex;align-items:center;gap:8px;}
+  .rpt-legend .rpt-dot{width:9px;height:9px;border-radius:50%;}
+  .rpt-table-panel{flex:1.3 1 320px;max-height:300px;overflow:auto;}
+  .rpt-table-panel table{width:100%;border-collapse:collapse;font-size:12px;}
+  .rpt-table-panel th{position:sticky;top:0;background:var(--rpt-panel2);color:var(--rpt-blue);text-align:left;padding:6px 10px;font-weight:700;border-bottom:1px solid var(--rpt-border);}
+  .rpt-table-panel td{padding:6px 10px;border-bottom:1px solid var(--rpt-border);color:var(--rpt-text);white-space:nowrap;}
+  .rpt-bar-panel{width:100%;margin-top:16px;}
+  .rpt-bar-chart{display:flex;align-items:flex-end;gap:4px;height:220px;padding:10px 4px 0;overflow-x:auto;}
+  .rpt-bar-col{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;min-width:16px;flex:1 1 16px;height:100%;}
+  .rpt-bar-seg-orange{width:100%;background:var(--rpt-orange);}
+  .rpt-bar-seg-blue{width:100%;background:var(--rpt-blue);border-radius:2px 2px 0 0;}
+  .rpt-bar-labels{display:flex;gap:4px;padding:6px 4px 0;overflow-x:auto;}
+  .rpt-bar-labels span{min-width:16px;flex:1 1 16px;font-size:9.5px;color:var(--rpt-text-dim);writing-mode:vertical-rl;transform:rotate(180deg);text-align:right;white-space:nowrap;}
+  .rpt-empty-note{color:var(--rpt-text-dim);font-size:12.5px;text-align:center;padding:20px;}
+  @media print{
+    body.report-mode > *:not(#reportOverlay){display:none !important;}
+    body.report-mode .report-overlay{position:static;overflow:visible;}
+    .rpt-no-print{display:none !important;}
+  }
 </style>
 </head>
 <body>
@@ -385,8 +450,9 @@
     <a class="nav-item"><span class="icon">◑</span> จัดการ User</a>
     <div class="nav-section-label">เครื่องมือ</div>
     <a class="nav-item" onclick="openSmcModalGeneral()"><span class="icon">📡</span> แจ้ง SMC Monitor</a>
-    <a class="nav-item"><span class="icon">⇩</span> ส่งออก Excel</a>
-    <a class="nav-item"><span class="icon">▣</span> Export Report</a>
+    <a class="nav-item" onclick="openPwModal()"><span class="icon">🔧</span> แจ้ง PW Change/Swap/Off</a>
+    <a class="nav-item" onclick="exportToExcel()"><span class="icon">⇩</span> ส่งออก Excel</a>
+    <a class="nav-item" onclick="exportReport()"><span class="icon">▣</span> Export Report</a>
     <a class="nav-item danger" onclick="clearAllData()"><span class="icon">⌫</span> ล้างข้อมูลทั้งหมด</a>
   </aside>
 
@@ -396,8 +462,8 @@
       <div class="topbar-right">
         <span class="clock" id="clock">--:--:--</span>
         <button class="btn btn-add" onclick="openAddModal()">+ Add New</button>
-        <button class="btn btn-primary">⤓ Export Excel</button>
-        <button class="btn btn-outline">↻ รีเฟรช</button>
+        <button class="btn btn-primary" id="exportExcelBtn" onclick="exportToExcel()">⤓ Export Excel</button>
+        <button class="btn btn-outline" id="refreshBtn" onclick="refreshData()">↻ รีเฟรช</button>
       </div>
     </div>
 
@@ -595,6 +661,60 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="pwModal">
+    <div class="modal-box" style="max-width:640px;">
+      <div class="modal-header">
+        <div><h3>แจ้ง PW Change up link OLT / Swap Olt / Off Node</h3></div>
+        <button class="modal-close" onclick="closePwModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="tab-row" style="flex-wrap:wrap;">
+          <button class="tab-btn active" data-pwtype="Change up link OLT" onclick="switchPwType('Change up link OLT')">Change up link OLT</button>
+          <button class="tab-btn" data-pwtype="Swap Olt" onclick="switchPwType('Swap Olt')">Swap Olt</button>
+          <button class="tab-btn" data-pwtype="Off Node" onclick="switchPwType('Off Node')">Off Node</button>
+        </div>
+        <div class="field-group">
+          <label class="field-label">CR Number + PROD Code <span style="color:var(--text-light);font-weight:400;">— วางได้หลายแถวพร้อมกัน (คัดลอกจาก Excel ได้เลย) แต่ละแถวคั่น CR กับ PROD ด้วย Tab หรือเว้นวรรค 2 ครั้งขึ้นไป</span></label>
+          <textarea class="modal-input" id="pwBulkInput" rows="3" style="resize:vertical;font-family:'Courier New',monospace;font-size:12.5px;" placeholder="CR202605100160    PD-FBB-E-ONLACC-OE: Remove the OLT...&#10;CR202605100930    PD-FBB-E-ONLACC-NS: Rehome BKK..."></textarea>
+          <div style="display:flex;justify-content:flex-end;margin-top:6px;">
+            <button type="button" class="btn btn-outline" style="padding:6px 12px;font-size:12.5px;" onclick="addPwItemsFromBulk()">+ เพิ่มเข้ารายการ</button>
+          </div>
+          <div id="pwItemList" style="margin-top:8px;max-height:140px;overflow-y:auto;"></div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">ถึง (To)</label>
+          <input class="modal-input" id="pwTo" value="BO IP Provisioning <bo-ip-pro@ericsson.com>; Apichai Passadu <Apichai_Pas@truecorp.co.th>; Thaweesak Aiemnu <thaweesak_aie@truecorp.co.th>; PW Control Team <pwcontrolteam@truecorp.co.th>; ANTS <ants@truecorp.co.th>; BBTS <bbts@truecorp.co.th>; Nahathai Jurasatean <nahathai_ram@truecorp.co.th>; True-MS-TH Change Management <true-ms-th.change.management@ericsson.com>; BOGIS <bogis@ericsson.com>; Wasupol Larmahasak <wasupol.larmahasak@ericsson.com>">
+        </div>
+        <div class="field-group">
+          <label class="field-label">สำเนา (Cc)</label>
+          <input class="modal-input" id="pwCc" value="Theerameth Sirawannapat <Theerameth_Sir@truecorp.co.th>; DPO-FIX <dpo-fix@ericsson.com>; NSA-Team <nsa-team@truecorp.co.th>; Ornjira Wongchirung <Ornjira_Won@truecorp.co.th>; Chaiwat Thanmak <Chaiwat_Tha@truecorp.co.th>; Aritaj Chaiwattanasak <aritaj.chaiwattanasak@ericsson.com>; Suwadee Chattong <suwadee_cha@truecorp.co.th>; Wasupol Larmahasak <wasupol.larmahasak@ericsson.com>">
+        </div>
+        <div class="field-group">
+          <label class="field-label">ช่วงเวลา</label>
+          <select class="modal-input" id="pwDayNight" onchange="refreshPwTemplate()">
+            <option value="DayTime">DayTime (09:00-20:59)</option>
+            <option value="NightTime">NightTime (21:00-08:59)</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label">หัวข้อ (Subject)</label>
+          <input class="modal-input" id="pwSubject">
+        </div>
+        <div class="field-group">
+          <label class="field-label">เนื้อหา (Body)</label>
+          <textarea class="modal-textarea" id="pwBody" style="min-height:280px;"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <span class="copy-hint" id="pwCopyHint">คัดลอกแล้ว ✓</span>
+        <button class="btn btn-outline" onclick="copyPwBody()">คัดลอกเนื้อหา</button>
+        <button class="btn btn-primary" onclick="sendPwMail()">✉ เปิดในอีเมล</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="report-overlay" id="reportOverlay"></div>
+
 <script>
 const STAFF_LIST = [
   "Nittaya Khlaypong",
@@ -688,6 +808,264 @@ function clearAllData(){
     renderStats();
     renderTable();
   });
+}
+
+function refreshData(){
+  const btn = document.getElementById("refreshBtn");
+  btn.disabled = true;
+  btn.classList.add("btn-spinning");
+
+  // reset filters back to default and re-render from the live data array
+  document.getElementById("searchInput").value = "";
+  document.getElementById("staffFilter").value = "";
+  document.getElementById("timeFilter").value = "";
+  document.getElementById("statusFilter").value = "";
+
+  renderStats();
+  renderTable();
+
+  setTimeout(()=>{
+    btn.classList.remove("btn-spinning");
+    btn.disabled = false;
+  }, 500);
+}
+
+function isoWeekKey(date){
+  if(!date || isNaN(date)) return null;
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = (d.getUTCDay() + 6) % 7; // Mon=0..Sun=6
+  d.setUTCDate(d.getUTCDate() - dayNum + 3);
+  const firstThursday = new Date(Date.UTC(d.getUTCFullYear(), 0, 4));
+  const weekNum = 1 + Math.round(((d - firstThursday) / 86400000 - 3 + ((firstThursday.getUTCDay() + 6) % 7)) / 7);
+  return `${d.getUTCFullYear()}-${String(weekNum).padStart(2,"0")}`;
+}
+
+function parseThaiDMY(str){
+  if(!str) return null;
+  const datePart = str.split(" ")[0];
+  const parts = datePart.split("/");
+  if(parts.length < 3) return null;
+  const [d,m,y] = parts.map(Number);
+  if(!d || !m || !y) return null;
+  return new Date(y, m-1, d);
+}
+
+function isoWeekKey(date){
+  if(!date || isNaN(date)) return null;
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = (d.getUTCDay() + 6) % 7; // Mon=0..Sun=6
+  d.setUTCDate(d.getUTCDate() - dayNum + 3);
+  const firstThursday = new Date(Date.UTC(d.getUTCFullYear(), 0, 4));
+  const weekNum = 1 + Math.round(((d - firstThursday) / 86400000 - 3 + ((firstThursday.getUTCDay() + 6) % 7)) / 7);
+  return `${d.getUTCFullYear()}-${String(weekNum).padStart(2,"0")}`;
+}
+
+function parseThaiDMY(str){
+  if(!str) return null;
+  const datePart = str.split(" ")[0];
+  const parts = datePart.split("/");
+  if(parts.length < 3) return null;
+  const [d,m,y] = parts.map(Number);
+  if(!d || !m || !y) return null;
+  return new Date(y, m-1, d);
+}
+
+const DONE_STATUS = "ดำเนินการแล้ว";
+let REPORT_RECORDS = [];
+let REPORT_SELECTED_WEEKS = new Set();
+
+function reportUniqueWeeksSorted(){
+  const set = new Set(REPORT_RECORDS.map(r=>r.week));
+  return Array.from(set).sort();
+}
+
+function exportReport(){
+  REPORT_RECORDS = data.map(d=>({
+    circuit: d.circuit,
+    apptDate: d.apptDate,
+    apptTime: d.apptTime,
+    staff: d.staff,
+    status: d.status,
+    week: isoWeekKey(parseThaiDMY(d.apptDate)) || "N/A"
+  }));
+
+  const genAt = new Date().toLocaleString("th-TH",{hour12:false});
+  const overlay = document.getElementById("reportOverlay");
+
+  overlay.innerHTML = `
+    <div class="rpt-toolbar">
+      <button class="rpt-btn-print rpt-no-print" onclick="window.print()">🖨 พิมพ์ / บันทึกเป็น PDF</button>
+      <button class="rpt-btn-close rpt-no-print" onclick="closeReportOverlay()">✕ ปิด</button>
+    </div>
+    <div class="rpt-layout">
+      <div class="rpt-sidebar">
+        <h4>year-week</h4>
+        <label><input type="checkbox" id="rptSelectAll" checked onchange="reportToggleAllWeeks(this.checked)"> Select all</label>
+        <div id="rptWeekList"></div>
+      </div>
+      <div class="rpt-content">
+        <div class="rpt-header">
+          <div class="rpt-title-box">
+            <h1>รายการนัดนอกเวลาทำการ Report</h1>
+            <div class="rpt-sub">สร้างรายงานเมื่อ ${genAt}</div>
+          </div>
+          <div class="rpt-stat-card rpt-stat-blue"><div class="rpt-num" id="rptStatTotal">0</div><div class="rpt-lbl">จำนวนรายการนัดหมายทั้งหมด</div></div>
+          <div class="rpt-stat-card rpt-stat-teal"><div class="rpt-num" id="rptStatDone">0</div><div class="rpt-lbl">จำนวนรายการดำเนินการแล้ว</div></div>
+          <div class="rpt-stat-card rpt-stat-orange"><div class="rpt-num" id="rptStatPending">0</div><div class="rpt-lbl">จำนวนรายการรอดำเนินการ</div></div>
+        </div>
+        <div class="rpt-panels">
+          <div class="rpt-panel rpt-donut-panel">
+            <h3>สัดส่วนสถานะ (Status)</h3>
+            <div class="rpt-donut-wrap">
+              <svg width="140" height="140" viewBox="0 0 42 42">
+                <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#3d3e40" stroke-width="6"></circle>
+                <circle id="rptDonutDone" cx="21" cy="21" r="15.915" fill="transparent" stroke="var(--rpt-blue)" stroke-width="6" stroke-dasharray="0 100" stroke-dashoffset="25"></circle>
+                <circle id="rptDonutPending" cx="21" cy="21" r="15.915" fill="transparent" stroke="var(--rpt-orange)" stroke-width="6" stroke-dasharray="0 100" stroke-dashoffset="25"></circle>
+              </svg>
+              <div class="rpt-legend">
+                <div class="rpt-item"><span class="rpt-dot" style="background:var(--rpt-blue);"></span><span id="rptLegendDone">ดำเนินการแล้ว 0%</span></div>
+                <div class="rpt-item"><span class="rpt-dot" style="background:var(--rpt-orange);"></span><span id="rptLegendPending">รอดำเนินการ 0%</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="rpt-panel rpt-table-panel">
+            <h3>รายละเอียดรายการ</h3>
+            <table>
+              <thead><tr><th>week</th><th>circuit</th><th>ADA Assigned</th><th>สถานะ</th></tr></thead>
+              <tbody id="rptTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="rpt-panel rpt-bar-panel">
+          <h3>จำนวนรายการต่อสัปดาห์ (Count by week)</h3>
+          <div class="rpt-bar-chart" id="rptBarChart"></div>
+          <div class="rpt-bar-labels" id="rptBarLabels"></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  reportBuildSidebar();
+  reportRender();
+
+  overlay.classList.add("open");
+  document.body.classList.add("report-mode");
+}
+
+function closeReportOverlay(){
+  document.getElementById("reportOverlay").classList.remove("open");
+  document.body.classList.remove("report-mode");
+}
+
+function reportBuildSidebar(){
+  const weeks = reportUniqueWeeksSorted();
+  REPORT_SELECTED_WEEKS = new Set(weeks);
+  const box = document.getElementById("rptWeekList");
+  box.innerHTML = weeks.map(w=>
+    `<label><input type="checkbox" class="rpt-week-cb" value="${w}" checked onchange="reportOnWeekToggle()"> ${w}</label>`
+  ).join("") || '<div class="rpt-empty-note">ไม่มีข้อมูล</div>';
+  document.getElementById("rptSelectAll").checked = true;
+}
+
+function reportToggleAllWeeks(checked){
+  document.querySelectorAll(".rpt-week-cb").forEach(cb=>cb.checked = checked);
+  reportOnWeekToggle();
+}
+
+function reportOnWeekToggle(){
+  const checked = Array.from(document.querySelectorAll(".rpt-week-cb:checked")).map(cb=>cb.value);
+  REPORT_SELECTED_WEEKS = new Set(checked);
+  const allCb = document.getElementById("rptSelectAll");
+  allCb.checked = checked.length === document.querySelectorAll(".rpt-week-cb").length;
+  reportRender();
+}
+
+function reportRender(){
+  const rows = REPORT_RECORDS.filter(r=>REPORT_SELECTED_WEEKS.has(r.week));
+  const total = rows.length;
+  const done = rows.filter(r=>r.status===DONE_STATUS).length;
+  const pending = total - done;
+
+  document.getElementById("rptStatTotal").textContent = total;
+  document.getElementById("rptStatDone").textContent = done;
+  document.getElementById("rptStatPending").textContent = pending;
+
+  const donePct = total ? Math.round((done/total)*1000)/10 : 0;
+  const pendingPct = total ? Math.round((pending/total)*1000)/10 : 0;
+  document.getElementById("rptDonutDone").setAttribute("stroke-dasharray", `${donePct} ${100-donePct}`);
+  document.getElementById("rptDonutPending").setAttribute("stroke-dasharray", `${pendingPct} ${100-pendingPct}`);
+  document.getElementById("rptDonutPending").setAttribute("stroke-dashoffset", `${25 - donePct}`);
+  document.getElementById("rptLegendDone").textContent = `ดำเนินการแล้ว ${donePct}%`;
+  document.getElementById("rptLegendPending").textContent = `รอดำเนินการ ${pendingPct}%`;
+
+  const tbody = document.getElementById("rptTableBody");
+  tbody.innerHTML = rows.map(r=>
+    `<tr><td>${r.week}</td><td>${r.circuit}</td><td>${r.staff}</td><td>${r.status}</td></tr>`
+  ).join("") || '<tr><td colspan="4" class="rpt-empty-note">ไม่มีข้อมูล</td></tr>';
+
+  const weeks = reportUniqueWeeksSorted().filter(w=>REPORT_SELECTED_WEEKS.has(w));
+  const perWeek = weeks.map(w=>{
+    const wr = rows.filter(r=>r.week===w);
+    return {week:w, done: wr.filter(r=>r.status===DONE_STATUS).length, pending: wr.filter(r=>r.status!==DONE_STATUS).length};
+  });
+  const maxCount = Math.max(1, ...perWeek.map(w=>w.done+w.pending));
+
+  const barChart = document.getElementById("rptBarChart");
+  const barLabels = document.getElementById("rptBarLabels");
+  if(perWeek.length === 0){
+    barChart.innerHTML = '<div class="rpt-empty-note">ไม่มีข้อมูล</div>';
+    barLabels.innerHTML = "";
+  } else {
+    barChart.innerHTML = perWeek.map(w=>{
+      const doneH = (w.done/maxCount)*100;
+      const pendH = (w.pending/maxCount)*100;
+      return `<div class="rpt-bar-col" title="${w.week}: ${w.done+w.pending} รายการ">
+        <div class="rpt-bar-seg-orange" style="height:${pendH}%;"></div>
+        <div class="rpt-bar-seg-blue" style="height:${doneH}%;"></div>
+      </div>`;
+    }).join("");
+    barLabels.innerHTML = perWeek.map(w=>`<span>${w.week}</span>`).join("");
+  }
+}
+
+function exportToExcel(){
+  const rows = (window.currentRows && window.currentRows.length) ? window.currentRows : data;
+
+  if(!rows.length){
+    openConfirmModal("ไม่มีข้อมูลสำหรับส่งออก", ()=>{});
+    document.getElementById("confirmOkBtn").textContent = "ตกลง";
+    return;
+  }
+
+  const headers = ["ลำดับ","วันที่บันทึก","Circuit","วันที่นัดหมาย","เวลานัดหมาย","ADA Assigned","อีเมล","สถานะ"];
+  const aoa = [headers, ...rows.map((d,i)=>[
+    i+1, d.recordDate, d.circuit, d.apptDate, d.apptTime, d.staff, d.email, d.status
+  ])];
+
+  const filenameBase = `รายการนัดนอกเวลาทำการ_${pwNowDate().replace(/\//g,"-")}`;
+
+  if(typeof XLSX !== "undefined"){
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws["!cols"] = [{wch:6},{wch:18},{wch:22},{wch:14},{wch:16},{wch:24},{wch:26},{wch:16}];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "รายการนัด");
+    XLSX.writeFile(wb, `${filenameBase}.xlsx`);
+  } else {
+    // fallback: CSV with BOM so Excel opens Thai text correctly
+    const csv = aoa.map(row => row.map(cell=>{
+      const s = String(cell ?? "");
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
+    }).join(",")).join("\r\n");
+    const blob = new Blob(["\uFEFF" + csv], {type:"text/csv;charset=utf-8;"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${filenameBase}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
 }
 
 function renderTable(){
@@ -1076,6 +1454,134 @@ function submitAddForm(){
 
 document.getElementById("addModal").addEventListener("click", (e)=>{
   if(e.target.id === "addModal") closeAddModal();
+});
+
+let pwCurrentType = "Change up link OLT";
+let pwItems = [];
+
+function pwBodyTemplate(type, items){
+  let planLine;
+  if(items.length === 0){
+    planLine = `Planwork - ${type}  (CRxxxxxxxxxxxxx  PROD-xxx-x-xxxx-xx-xxxxxxxxx)`;
+  } else if(items.length === 1){
+    planLine = `Planwork - ${type}  (${items[0].cr}  ${items[0].prod})`;
+  } else {
+    const list = items.map(it=>`${it.cr}   ${it.prod}`).join("\n");
+    planLine = `Planwork - ${type}  (${items.length} รายการ)\n\n${list}`;
+  }
+
+  return `Dear All,
+${planLine}
+
+Dear K. Thaweesak
+      Please update OLT/Dslam
+Dear K. Duangdao
+      Please update OLT UPC file
+Dear DPO-FIX
+      Please update MPLS circuits
+Dear DPO-Fix (K.Wasupol)
+      Please update MANE
+Dear Express Provisioning Team
+      Please update qrun
+
+Update
+`;
+}
+
+function switchPwType(type){
+  pwCurrentType = type;
+  document.querySelectorAll('#pwModal .tab-btn').forEach(btn=>{
+    btn.classList.toggle("active", btn.getAttribute("data-pwtype") === type);
+  });
+  refreshPwTemplate();
+}
+
+function addPwItemsFromBulk(){
+  const raw = document.getElementById("pwBulkInput").value;
+  const lines = raw.split("\n").map(l=>l.trim()).filter(Boolean);
+  lines.forEach(line=>{
+    const parts = line.includes("\t") ? line.split("\t") : line.split(/\s{2,}/);
+    const cr = (parts[0]||"").trim();
+    const prod = parts.slice(1).join(" ").trim();
+    if(cr || prod){
+      pwItems.push({cr: cr || "-", prod: prod || "-"});
+    }
+  });
+  document.getElementById("pwBulkInput").value = "";
+  renderPwItemList();
+  refreshPwTemplate();
+}
+
+function removePwItem(idx){
+  pwItems.splice(idx, 1);
+  renderPwItemList();
+  refreshPwTemplate();
+}
+
+function renderPwItemList(){
+  const box = document.getElementById("pwItemList");
+  if(pwItems.length === 0){
+    box.innerHTML = '<div style="color:var(--text-light);font-size:12.5px;">ยังไม่ได้เพิ่มรายการ (วาง CR/PROD ด้านบนแล้วกด "+ เพิ่มเข้ารายการ")</div>';
+    return;
+  }
+  box.innerHTML = pwItems.map((it,i)=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border:1px solid var(--border);border-radius:6px;margin-bottom:6px;font-size:12.5px;">
+      <span>${it.cr} &nbsp;|&nbsp; ${it.prod}</span>
+      <button type="button" onclick="removePwItem(${i})" style="border:none;background:transparent;color:var(--accent-red);cursor:pointer;font-size:13px;">✕</button>
+    </div>
+  `).join("");
+}
+
+function pwNowDate(){
+  const now = new Date();
+  return `${String(now.getDate()).padStart(2,"0")}/${String(now.getMonth()+1).padStart(2,"0")}/${now.getFullYear()}`;
+}
+
+function pwAutoDayNightTag(){
+  const hour = new Date().getHours();
+  return (hour >= 9 && hour < 21) ? "DayTime" : "NightTime";
+}
+
+function refreshPwTemplate(){
+  const items = [...pwItems];
+  const dayNight = document.getElementById("pwDayNight").value;
+  document.getElementById("pwSubject").value = `Update ${pwCurrentType} ${pwNowDate()} ${dayNight} ${items.length} CR PW`;
+  document.getElementById("pwBody").value = pwBodyTemplate(pwCurrentType, items);
+  document.getElementById("pwCopyHint").classList.remove("show");
+}
+
+function openPwModal(){
+  document.getElementById("pwBulkInput").value = "";
+  pwItems = [];
+  renderPwItemList();
+  document.getElementById("pwDayNight").value = pwAutoDayNightTag();
+  switchPwType("Change up link OLT");
+  document.getElementById("pwModal").classList.add("open");
+}
+
+function closePwModal(){
+  document.getElementById("pwModal").classList.remove("open");
+}
+
+function copyPwBody(){
+  const text = document.getElementById("pwBody").value;
+  navigator.clipboard.writeText(text).then(()=>{
+    const hint = document.getElementById("pwCopyHint");
+    hint.classList.add("show");
+    setTimeout(()=>hint.classList.remove("show"), 1800);
+  });
+}
+
+function sendPwMail(){
+  const to = document.getElementById("pwTo").value;
+  const cc = document.getElementById("pwCc").value;
+  const subject = encodeURIComponent(document.getElementById("pwSubject").value);
+  const bodyText = encodeURIComponent(document.getElementById("pwBody").value);
+  window.location.href = `mailto:${to}?cc=${encodeURIComponent(cc)}&subject=${subject}&body=${bodyText}`;
+}
+
+document.getElementById("pwModal").addEventListener("click", (e)=>{
+  if(e.target.id === "pwModal") closePwModal();
 });
 
 populateStaffFilter();
